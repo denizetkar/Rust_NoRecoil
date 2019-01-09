@@ -20,13 +20,13 @@ void NoRecoil::initGuns() {
 	guns[0].shots = 30;
 	guns[0].millisecondsRecoilCooldown = 500;
 	guns[0].fullyAutomatic = true;
-	scope_x_stance_y = new int[30]{ 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29 };
+	scope_x_stance_y = new int[30]{ -41,5,-60,-52,0,20,28,46,58,48,52,30,28,-8,-20,-30,-52,-54,-60,-56,-52,-44,-42,18,0,0,0,0,0,0 };
 	for (int i = 0; i < 5; ++i) {
 		for (int j = 0; j < 2; ++j) {
 			guns[0].recoilOffsetX[i][j] = scope_x_stance_y;
 		}
 	}
-	scope_x_stance_y = new int[30]{ 10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10 };
+	scope_x_stance_y = new int[30]{ 58,56,50,46,40,26,24,34,16,12,14,16,36,34,42,46,36,40,30,20,16,8,8,12,26,0,0,0,0,0 };
 	for (int i = 0; i < 5; ++i) {
 		for (int j = 0; j < 2; ++j) {
 			guns[0].recoilOffsetY[i][j] = scope_x_stance_y;
@@ -43,7 +43,7 @@ void NoRecoil::initGuns() {
 			guns[1].recoilOffsetX[i][j] = scope_x_stance_y;
 		}
 	}
-	scope_x_stance_y = new int[30]{ 5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5 };
+	scope_x_stance_y = new int[30]{ 52,52,40,40,40,40,40,40,40,40,40,40,40,40,40,40 };
 	for (int i = 0; i < 5; ++i) {
 		for (int j = 0; j < 2; ++j) {
 			guns[1].recoilOffsetY[i][j] = scope_x_stance_y;
@@ -55,8 +55,40 @@ void NoRecoil::initGuns() {
 	SetProcessDPIAware();
 }
 
-void NoRecoil::antiRecoilThreadFunction(DWORD main_thread_id) {
+void NoRecoil::startHooks() {
+	MyHook::Instance().InstallHooks();
+	MyHook::Instance(processMouseInput, processKeyboardInput, destroy).Messsages();
+}
+
+void NoRecoil::destroy() {
+	noRecoilActiveMutex.try_lock();
+	noRecoilActiveMutex.unlock();
+	leftClickDownMutex.try_lock();
+	leftClickDownMutex.unlock();
+	cancelRecoilSleepMutex.try_lock();
+	cancelRecoilSleepMutex.unlock();
+	cancelRecoilResetMutex.try_lock();
+	cancelRecoilResetMutex.unlock();
+	shotCountMutex.try_lock();
+	shotCountMutex.unlock();
+}
+
+void NoRecoil::moveMouseWithDelta(int dX, int dY) {
+	INPUT input = { 0 };
 	POINT mousePosition;
+	GetCursorPos(&mousePosition);
+
+	std::cout << "( " << mousePosition.x << "," << mousePosition.y << ") + ( " << dX << "," << dY << ")\n";
+
+	input.type = INPUT_MOUSE;
+	input.mi.dx = std::lround(((mousePosition.x + dX) * 65535.0) / GetSystemMetrics(SM_CXSCREEN));
+	input.mi.dy = std::lround(((mousePosition.y + dY) * 65535.0) / GetSystemMetrics(SM_CYSCREEN));
+	// MOUSEEVENTF_MOVE
+	input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_VIRTUALDESK | MOUSEEVENTF_ABSOLUTE;
+	SendInput(1, &input, sizeof(input));
+}
+
+void NoRecoil::antiRecoilThreadFunction(DWORD main_thread_id) {
 	std::chrono::milliseconds timeout;
 	int recoilOffsetX, recoilOffsetY;
 	int localShotCount;
@@ -76,11 +108,11 @@ void NoRecoil::antiRecoilThreadFunction(DWORD main_thread_id) {
 			shotCountMutex.unlock();
 			recoilOffsetX = guns[currentGun].recoilOffsetX[currentGunScope][currentStance][localShotCount];
 			recoilOffsetY = guns[currentGun].recoilOffsetY[currentGunScope][currentStance][localShotCount];
-			GetCursorPos(&mousePosition);
-			SetCursorPos(mousePosition.x + recoilOffsetX, mousePosition.y + recoilOffsetY);
+
 			std::cout << "currentGun: " << currentGun << ", currentGunScope: " << currentGunScope <<
 				", currentStance: " << currentStance << ", shotCount: " << localShotCount << "\n";
-			std::cout << "(" << mousePosition.x << ", " << mousePosition.y << ") + ( " << recoilOffsetX << "," << recoilOffsetY << ")\n";
+
+			moveMouseWithDelta(recoilOffsetX, recoilOffsetY);
 			if (!guns[currentGun].fullyAutomatic) {
 				// Send virtual left click UP signal in order to stop continuous recoil compensation
 				INPUT Input = { 0 };
@@ -116,24 +148,6 @@ void NoRecoil::recoilResetThreadFunction(long millisecondsRecoilCooldown) {
 		shotCount = 0;
 		shotCountMutex.unlock();
 	}
-}
-
-void NoRecoil::startHooks() {
-	MyHook::Instance().InstallHooks();
-	MyHook::Instance(processMouseInput, processKeyboardInput, destroy).Messsages();
-}
-
-void NoRecoil::destroy() {
-	noRecoilActiveMutex.try_lock();
-	noRecoilActiveMutex.unlock();
-	leftClickDownMutex.try_lock();
-	leftClickDownMutex.unlock();
-	cancelRecoilSleepMutex.try_lock();
-	cancelRecoilSleepMutex.unlock();
-	cancelRecoilResetMutex.try_lock();
-	cancelRecoilResetMutex.unlock();
-	shotCountMutex.try_lock();
-	shotCountMutex.unlock();
 }
 
 void NoRecoil::processMouseInput(WPARAM wParam, PMSLLHOOKSTRUCT pMouseStruct) {
@@ -193,6 +207,7 @@ void NoRecoil::processKeyboardInput(WPARAM wParam, PKBDLLHOOKSTRUCT kbdStruct) {
 		case 0x37:
 		case 0x38:
 		case 0x39:
+			// UP: digit
 			digit = kbdStruct->vkCode - 0x30;
 			if (acceptGunNumber) {
 				enteredGunNumber *= 10;

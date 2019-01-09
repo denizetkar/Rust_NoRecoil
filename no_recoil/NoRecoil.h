@@ -63,17 +63,20 @@ protected:
 	static std::mutex shotCountMutex;
 public:
 	static void init();
-	static void initGuns();
 
 protected:
-	static void antiRecoilThreadFunction(DWORD);
-	static void recoilResetThreadFunction(long);
+	static void initGuns();
 
 public:
 	static void startHooks();
-	static void destroy();
 
 protected:
+	static void destroy();
+	static void moveMouseWithDelta(int, int);
+
+	static void antiRecoilThreadFunction(DWORD);
+	static void recoilResetThreadFunction(long);
+
 	static void processMouseInput(WPARAM, PMSLLHOOKSTRUCT);
 	static void processKeyboardInput(WPARAM, PKBDLLHOOKSTRUCT);
 };
