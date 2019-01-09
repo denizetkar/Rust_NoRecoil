@@ -7,7 +7,7 @@ void NoRecoil::init() {
 	if (antiRecoilThread == nullptr) {
 		noRecoilActiveMutex.lock();
 		leftClickDownMutex.lock();
-		cancelRecoilSleep.lock();
+		cancelRecoilSleepMutex.lock();
 		antiRecoilThread = new std::thread{ antiRecoilThreadFunction, GetCurrentThreadId() };
 	}
 }
@@ -91,8 +91,8 @@ void NoRecoil::antiRecoilThreadFunction(DWORD main_thread_id) {
 
 			// TIME BETWEEN SHOTS
 			timeout = std::chrono::milliseconds{ millisecondsBetweenShots };
-			if (cancelRecoilSleep.try_lock_for(timeout)) {
-				cancelRecoilSleep.unlock();
+			if (cancelRecoilSleepMutex.try_lock_for(timeout)) {
+				cancelRecoilSleepMutex.unlock();
 			}
 		}
 	}
@@ -108,8 +108,8 @@ void NoRecoil::antiRecoilThreadFunction(DWORD main_thread_id) {
 }
 
 void NoRecoil::recoilResetThreadFunction(long millisecondsRecoilCooldown) {
-	if (cancelRecoilReset.try_lock_for(std::chrono::milliseconds{ millisecondsRecoilCooldown })) {
-		cancelRecoilReset.unlock();
+	if (cancelRecoilResetMutex.try_lock_for(std::chrono::milliseconds{ millisecondsRecoilCooldown })) {
+		cancelRecoilResetMutex.unlock();
 	}
 	else {
 		shotCountMutex.lock();
@@ -128,10 +128,12 @@ void NoRecoil::destroy() {
 	noRecoilActiveMutex.unlock();
 	leftClickDownMutex.try_lock();
 	leftClickDownMutex.unlock();
-	cancelRecoilSleep.try_lock();
-	cancelRecoilSleep.unlock();
-	cancelRecoilReset.try_lock();
-	cancelRecoilReset.unlock();
+	cancelRecoilSleepMutex.try_lock();
+	cancelRecoilSleepMutex.unlock();
+	cancelRecoilResetMutex.try_lock();
+	cancelRecoilResetMutex.unlock();
+	shotCountMutex.try_lock();
+	shotCountMutex.unlock();
 }
 
 void NoRecoil::processMouseInput(WPARAM wParam, PMSLLHOOKSTRUCT pMouseStruct) {
@@ -139,22 +141,22 @@ void NoRecoil::processMouseInput(WPARAM wParam, PMSLLHOOKSTRUCT pMouseStruct) {
 	case WM_LBUTTONDOWN:
 		// DOWN: left click
 		// Cancel resetting recoil
-		cancelRecoilReset.try_lock();
-		cancelRecoilReset.unlock();
+		cancelRecoilResetMutex.try_lock();
+		cancelRecoilResetMutex.unlock();
 		if (recoilResetThread.valid()) {
 			recoilResetThread.wait();
 		}
 		// Let the antiRecoilThread run
-		cancelRecoilSleep.unlock();
+		cancelRecoilSleepMutex.unlock();
 		leftClickDownMutex.unlock();
-		cancelRecoilSleep.lock();
+		cancelRecoilSleepMutex.lock();
 		break;
 	case WM_LBUTTONUP:
 		// UP: left click
 		leftClickDownMutex.lock();
-		if (cancelRecoilReset.getOwnerThreadID() != GetCurrentThreadId()) {
+		if (cancelRecoilResetMutex.getOwnerThreadID() != GetCurrentThreadId()) {
 			// Start resetting recoil
-			cancelRecoilReset.lock();
+			cancelRecoilResetMutex.lock();
 			recoilResetThread = std::async(std::launch::async, recoilResetThreadFunction, guns[currentGun].millisecondsRecoilCooldown);
 		}
 		break;
@@ -256,7 +258,7 @@ std::thread* NoRecoil::antiRecoilThread = nullptr;
 std::future<void> NoRecoil::recoilResetThread;
 std::mutex NoRecoil::noRecoilActiveMutex;
 SafeMutex NoRecoil::leftClickDownMutex;
-std::timed_mutex NoRecoil::cancelRecoilSleep;
-SafeTimedMutex NoRecoil::cancelRecoilReset;
+std::timed_mutex NoRecoil::cancelRecoilSleepMutex;
+SafeTimedMutex NoRecoil::cancelRecoilResetMutex;
 
 std::mutex NoRecoil::shotCountMutex;
