@@ -19,6 +19,7 @@ void NoRecoil::initGuns() {
 	guns[0].RPM = 450;
 	guns[0].shots = 30;
 	guns[0].millisecondsRecoilCooldown = 500;
+	guns[0].fullyAutomatic = true;
 	scope_x_stance_y = new int[30]{ 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29 };
 	for (int i = 0; i < 5; ++i) {
 		for (int j = 0; j < 2; ++j) {
@@ -35,6 +36,7 @@ void NoRecoil::initGuns() {
 	guns[1].RPM = 343;
 	guns[1].shots = 16;
 	guns[1].millisecondsRecoilCooldown = 500;
+	guns[1].fullyAutomatic = false;
 	scope_x_stance_y = new int[30]{ 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
 	for (int i = 0; i < 5; ++i) {
 		for (int j = 0; j < 2; ++j) {
@@ -68,7 +70,7 @@ void NoRecoil::antiRecoilThreadFunction(DWORD main_thread_id) {
 		leftClickDownMutex.unlock();
 
 		if (noRecoilActive) {
-			// TODO: CHECK bullet count!!!!!!!!!!!!!
+			// CHECK bullet count
 			shotCountMutex.lock();
 			localShotCount = (shotCount++) % guns[currentGun].shots;
 			shotCountMutex.unlock();
@@ -79,6 +81,13 @@ void NoRecoil::antiRecoilThreadFunction(DWORD main_thread_id) {
 			std::cout << "currentGun: " << currentGun << ", currentGunScope: " << currentGunScope <<
 				", currentStance: " << currentStance << ", shotCount: " << localShotCount << "\n";
 			std::cout << "(" << mousePosition.x << ", " << mousePosition.y << ") + ( " << recoilOffsetX << "," << recoilOffsetY << ")\n";
+			if (!guns[currentGun].fullyAutomatic) {
+				// Send virtual left click UP signal in order to stop continuous recoil compensation
+				INPUT Input = { 0 };
+				Input.type = INPUT_MOUSE;                 // Let input know we are using the mouse.
+				Input.mi.dwFlags = MOUSEEVENTF_LEFTUP;    // We are setting left mouse button up.
+				SendInput(1, &Input, sizeof(INPUT));      // Send the input.
+			}
 
 			// TIME BETWEEN SHOTS
 			timeout = std::chrono::milliseconds{ millisecondsBetweenShots };
@@ -143,9 +152,11 @@ void NoRecoil::processMouseInput(WPARAM wParam, PMSLLHOOKSTRUCT pMouseStruct) {
 	case WM_LBUTTONUP:
 		// UP: left click
 		leftClickDownMutex.lock();
-		// Start resetting recoil
-		cancelRecoilReset.lock();
-		recoilResetThread = std::async(std::launch::async, recoilResetThreadFunction, guns[currentGun].millisecondsRecoilCooldown);
+		if (cancelRecoilReset.getOwnerThreadID() != GetCurrentThreadId()) {
+			// Start resetting recoil
+			cancelRecoilReset.lock();
+			recoilResetThread = std::async(std::launch::async, recoilResetThreadFunction, guns[currentGun].millisecondsRecoilCooldown);
+		}
 		break;
 	default:
 		break;
@@ -244,8 +255,8 @@ int NoRecoil::enteredGunNumber;
 std::thread* NoRecoil::antiRecoilThread = nullptr;
 std::future<void> NoRecoil::recoilResetThread;
 std::mutex NoRecoil::noRecoilActiveMutex;
-std::mutex NoRecoil::leftClickDownMutex;
+SafeMutex NoRecoil::leftClickDownMutex;
 std::timed_mutex NoRecoil::cancelRecoilSleep;
-std::timed_mutex NoRecoil::cancelRecoilReset;
+SafeTimedMutex NoRecoil::cancelRecoilReset;
 
 std::mutex NoRecoil::shotCountMutex;

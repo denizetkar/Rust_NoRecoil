@@ -24,12 +24,24 @@
     <ClCompile Include="NoRecoil.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SafeMutex.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SafeTimedMutex.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MyHook.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="NoRecoil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SafeMutex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SafeTimedMutex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

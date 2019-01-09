@@ -114,10 +114,14 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MyHook.cpp" />
     <ClCompile Include="NoRecoil.cpp" />
+    <ClCompile Include="SafeMutex.cpp" />
+    <ClCompile Include="SafeTimedMutex.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MyHook.h" />
     <ClInclude Include="NoRecoil.h" />
+    <ClInclude Include="SafeMutex.h" />
+    <ClInclude Include="SafeTimedMutex.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="workspace.txt" />

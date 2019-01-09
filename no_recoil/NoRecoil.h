@@ -1,8 +1,10 @@
 #ifndef NO_RECOIL_H
 #define NO_RECOIL_H
 
-#include <Windows.h>
 #include "MyHook.h"
+#include "SafeMutex.h"
+#include "SafeTimedMutex.h"
+#include <Windows.h>
 #include <thread>
 #include <mutex>
 #include <future>
@@ -33,6 +35,7 @@ protected:
 		int RPM;
 		int shots;
 		long millisecondsRecoilCooldown;
+		bool fullyAutomatic;
 		// Dimensions: [#gun_scopes][#stances] ([#shots])
 		int *recoilOffsetX[NUMBER_OF_GUN_SCOPE][NUMBER_OF_STANCE];
 		int *recoilOffsetY[NUMBER_OF_GUN_SCOPE][NUMBER_OF_STANCE];
@@ -53,9 +56,9 @@ protected:
 	static std::thread *antiRecoilThread;
 	static std::future<void> recoilResetThread;
 	static std::mutex noRecoilActiveMutex;
-	static std::mutex leftClickDownMutex;
+	static SafeMutex leftClickDownMutex;
 	static std::timed_mutex cancelRecoilSleep;
-	static std::timed_mutex cancelRecoilReset;
+	static SafeTimedMutex cancelRecoilReset;
 
 	static std::mutex shotCountMutex;
 public:
