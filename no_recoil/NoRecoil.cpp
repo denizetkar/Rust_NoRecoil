@@ -48,7 +48,7 @@ void NoRecoil::initGuns() {
 		}
 	}
 
-	millisecondsBetweenShots = std::lround(1000.0 / guns[0].RPM);
+	millisecondsBetweenShots = std::lround(60000.0 / guns[0].RPM);
 	// Otherwise GetCursorPos returns "wrong" positions
 	SetProcessDPIAware();
 }
@@ -214,7 +214,7 @@ void NoRecoil::processKeyboardInput(WPARAM wParam, PKBDLLHOOKSTRUCT kbdStruct) {
 						enteredGunNumber = NUMBER_OF_GUN - 1;
 					}
 					currentGun = (GunIndex)enteredGunNumber;
-					millisecondsBetweenShots = std::lround(1000.0 / guns[currentGun].RPM);
+					millisecondsBetweenShots = std::lround(60000.0 / guns[currentGun].RPM);
 					enteredGunNumber = 0;
 				}
 				else {
