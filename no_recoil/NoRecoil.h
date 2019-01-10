@@ -55,9 +55,9 @@ protected:
 
 	static std::thread *antiRecoilThread;
 	static std::future<void> recoilResetThread;
-	static std::mutex noRecoilActiveMutex;
+	static SafeMutex noRecoilActiveMutex;
 	static SafeMutex leftClickDownMutex;
-	static std::timed_mutex cancelRecoilSleepMutex;
+	static SafeTimedMutex cancelRecoilSleepMutex;
 	static SafeTimedMutex cancelRecoilResetMutex;
 
 	static std::mutex shotCountMutex;

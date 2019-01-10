@@ -262,8 +262,8 @@ NoRecoil::GunScopeIndex NoRecoil::currentGunScope;
 NoRecoil::StanceIndex NoRecoil::currentStance;
 int NoRecoil::shotCount = 0;
 long NoRecoil::millisecondsBetweenShots;
-// Must start as 'false', otherwise the main thread will DEADLOCK
-// after receiving state transition command (will call lock on runMutex)!
+// Must start as 'false', because initially noRecoilActiveMutex
+// is locked to prevent antiRecoilThread from looping (running)!
 bool NoRecoil::noRecoilActive = false;
 
 bool NoRecoil::acceptGunNumber = false;
@@ -271,9 +271,9 @@ int NoRecoil::enteredGunNumber;
 
 std::thread* NoRecoil::antiRecoilThread = nullptr;
 std::future<void> NoRecoil::recoilResetThread;
-std::mutex NoRecoil::noRecoilActiveMutex;
+SafeMutex NoRecoil::noRecoilActiveMutex;
 SafeMutex NoRecoil::leftClickDownMutex;
-std::timed_mutex NoRecoil::cancelRecoilSleepMutex;
+SafeTimedMutex NoRecoil::cancelRecoilSleepMutex;
 SafeTimedMutex NoRecoil::cancelRecoilResetMutex;
 
 std::mutex NoRecoil::shotCountMutex;
