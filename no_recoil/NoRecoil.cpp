@@ -91,7 +91,7 @@ void NoRecoil::moveMouseWithDelta(int dX, int dY) {
 void NoRecoil::antiRecoilThreadFunction(DWORD main_thread_id) {
 	std::chrono::milliseconds timeout;
 	int recoilOffsetX, recoilOffsetY;
-	int localShotCount;
+	int localShotCount, localPrevErrorX, localPrevErrorY, offsetErrorX, offsetErrorY;
 
 	while (true) {
 		noRecoilActiveMutex.lock();
@@ -102,12 +102,20 @@ void NoRecoil::antiRecoilThreadFunction(DWORD main_thread_id) {
 		leftClickDownMutex.unlock();
 
 		if (noRecoilActive) {
+			offsetErrorX = offsetError(gen);
+			offsetErrorY = offsetError(gen);
 			// CHECK bullet count
 			shotCountMutex.lock();
 			localShotCount = (shotCount++) % guns[currentGun].shots;
+			localPrevErrorX = prevErrorX;
+			localPrevErrorY = prevErrorY;
+			prevErrorX = offsetErrorX;
+			prevErrorY = offsetErrorY;
 			shotCountMutex.unlock();
-			recoilOffsetX = guns[currentGun].recoilOffsetX[currentGunScope][currentStance][localShotCount];
-			recoilOffsetY = guns[currentGun].recoilOffsetY[currentGunScope][currentStance][localShotCount];
+			recoilOffsetX = guns[currentGun].recoilOffsetX[currentGunScope][currentStance][localShotCount]
+				- localPrevErrorX + offsetErrorX;
+			recoilOffsetY = guns[currentGun].recoilOffsetY[currentGunScope][currentStance][localShotCount]
+				- localPrevErrorY + offsetErrorY;
 
 			std::cout << "currentGun: " << currentGun << ", currentGunScope: " << currentGunScope <<
 				", currentStance: " << currentStance << ", shotCount: " << localShotCount << "\n";
@@ -145,7 +153,7 @@ void NoRecoil::recoilResetThreadFunction(long millisecondsRecoilCooldown) {
 	}
 	else {
 		shotCountMutex.lock();
-		shotCount = 0;
+		prevErrorX = prevErrorY = shotCount = 0;
 		shotCountMutex.unlock();
 	}
 }
@@ -256,10 +264,16 @@ void NoRecoil::processKeyboardInput(WPARAM wParam, PKBDLLHOOKSTRUCT kbdStruct) {
 	}
 }
 
+std::random_device NoRecoil::rd;  //Will be used to obtain a seed for the random number engine
+std::mt19937 NoRecoil::gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+std::uniform_int_distribution<int> NoRecoil::offsetError(-OFFSET_ERROR_BOUND, OFFSET_ERROR_BOUND);
+int NoRecoil::prevErrorX, NoRecoil::prevErrorY;
+
 NoRecoil::Gun NoRecoil::guns[NUMBER_OF_GUN];
 NoRecoil::GunIndex NoRecoil::currentGun;
 NoRecoil::GunScopeIndex NoRecoil::currentGunScope;
 NoRecoil::StanceIndex NoRecoil::currentStance;
+
 int NoRecoil::shotCount = 0;
 long NoRecoil::millisecondsBetweenShots;
 // Must start as 'false', because initially noRecoilActiveMutex

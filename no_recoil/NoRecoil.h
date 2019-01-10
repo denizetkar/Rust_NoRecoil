@@ -9,10 +9,13 @@
 #include <mutex>
 #include <future>
 #include <chrono>
+#include <random>
 
 #define NUMBER_OF_GUN 2
 #define NUMBER_OF_GUN_SCOPE 5
 #define NUMBER_OF_STANCE 2
+
+#define OFFSET_ERROR_BOUND 5
 
 class NoRecoil {
 
@@ -41,11 +44,17 @@ protected:
 		int *recoilOffsetY[NUMBER_OF_GUN_SCOPE][NUMBER_OF_STANCE];
 	};
 
+	static std::random_device rd;  //Will be used to obtain a seed for the random number engine
+	static std::mt19937 gen; //Standard mersenne_twister_engine seeded with rd()
+	static std::uniform_int_distribution<int> offsetError;
+	static int prevErrorX, prevErrorY;
+
 	// Dimension: [#guns]
 	static Gun guns[NUMBER_OF_GUN];
 	static GunIndex currentGun;
 	static GunScopeIndex currentGunScope;
 	static StanceIndex currentStance;
+
 	static long millisecondsBetweenShots;
 	static int shotCount;
 	static bool noRecoilActive;
