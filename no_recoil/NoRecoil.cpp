@@ -169,9 +169,8 @@ void NoRecoil::processMouseInput(WPARAM wParam, PMSLLHOOKSTRUCT pMouseStruct) {
 			recoilResetThread.wait();
 		}
 		// Let the antiRecoilThread run
-		cancelRecoilSleepMutex.unlock();
+		leftClickDownMutex.try_lock();
 		leftClickDownMutex.unlock();
-		cancelRecoilSleepMutex.lock();
 		break;
 	case WM_LBUTTONUP:
 		// UP: left click
@@ -270,9 +269,9 @@ std::uniform_int_distribution<int> NoRecoil::offsetError(-OFFSET_ERROR_BOUND, OF
 int NoRecoil::prevErrorX, NoRecoil::prevErrorY;
 
 NoRecoil::Gun NoRecoil::guns[NUMBER_OF_GUN];
-NoRecoil::GunIndex NoRecoil::currentGun;
-NoRecoil::GunScopeIndex NoRecoil::currentGunScope;
-NoRecoil::StanceIndex NoRecoil::currentStance;
+NoRecoil::GunIndex NoRecoil::currentGun = NoRecoil::GunIndex::AK_47;
+NoRecoil::GunScopeIndex NoRecoil::currentGunScope = NoRecoil::GunScopeIndex::NONE;
+NoRecoil::StanceIndex NoRecoil::currentStance = NoRecoil::StanceIndex::STAND;
 
 int NoRecoil::shotCount = 0;
 long NoRecoil::millisecondsBetweenShots;
