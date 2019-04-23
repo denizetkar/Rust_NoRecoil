@@ -7,7 +7,7 @@
 
 class SafeTimedMutex : public std::timed_mutex {
 protected:
-	DWORD ownerThreadID;
+	DWORD ownerThreadID = NULL;
 public:
 	void lock();
 	bool try_lock();

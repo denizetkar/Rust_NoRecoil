@@ -16,7 +16,7 @@ bool SafeTimedMutex::try_lock() {
 }
 
 void SafeTimedMutex::unlock() {
-	ownerThreadID = 0;
+	ownerThreadID = NULL;
 	timed_mutex::unlock();
 }
 
