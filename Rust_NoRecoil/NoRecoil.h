@@ -6,7 +6,6 @@
 #include "SafeTimedMutex.h"
 #include <Windows.h>
 #include <thread>
-#include <mutex>
 #include <future>
 #include <chrono>
 #include <random>
@@ -69,7 +68,7 @@ protected:
 	static SafeTimedMutex cancelRecoilSleepMutex;
 	static SafeTimedMutex cancelRecoilResetMutex;
 
-	static std::mutex shotCountMutex;
+	static SafeMutex shotCountMutex;
 public:
 	static void init();
 

@@ -7,12 +7,11 @@
 class SafeMutex : public std::mutex {
 protected:
 	DWORD ownerThreadID = NULL;
+	std::mutex innerMutex;
 public:
-	void lock();
+	bool lock();
 	bool try_lock();
 	void unlock();
-
-	DWORD getOwnerThreadID();
 };
 
 #endif

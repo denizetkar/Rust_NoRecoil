@@ -175,9 +175,8 @@ void NoRecoil::processMouseInput(WPARAM wParam, PMSLLHOOKSTRUCT pMouseStruct) {
 	case WM_LBUTTONUP:
 		// UP: left click
 		leftClickDownMutex.lock();
-		if (cancelRecoilResetMutex.getOwnerThreadID() != GetCurrentThreadId()) {
-			// Start resetting recoil
-			cancelRecoilResetMutex.lock();
+		// Start resetting recoil if we were not the thread owning 'cancelRecoilResetMutex'
+		if (cancelRecoilResetMutex.lock()) {
 			recoilResetThread = std::async(std::launch::async, recoilResetThreadFunction, guns[currentGun].millisecondsRecoilCooldown);
 		}
 		break;
@@ -289,4 +288,4 @@ SafeMutex NoRecoil::leftClickDownMutex;
 SafeTimedMutex NoRecoil::cancelRecoilSleepMutex;
 SafeTimedMutex NoRecoil::cancelRecoilResetMutex;
 
-std::mutex NoRecoil::shotCountMutex;
+SafeMutex NoRecoil::shotCountMutex;
