@@ -20,13 +20,13 @@ void NoRecoil::initGuns() {
 	guns[0].shots = 30;
 	guns[0].millisecondsRecoilCooldown = 500;
 	guns[0].fullyAutomatic = true;
-	scope_x_stance_y = new int[30]{ -36,5,-59,-49,3,20,25,45,43,32,82,8,43,-32,-28,-42,-45,-46,-45,-46,-48,-55,-25,15,20,35,50,62,40 };
+	scope_x_stance_y = new int[30]{ -28,5,-44,-35,0,13,24,30,34,34,30,24,13,2,-12,-23,-29,-35,-36,-37,-33,-28,-19,-9,9,29,38,40,31,12 };
 	for (int i = 0; i < 5; ++i) {
 		for (int j = 0; j < 2; ++j) {
 			guns[0].recoilOffsetX[i][j] = scope_x_stance_y;
 		}
 	}
-	scope_x_stance_y = new int[30]{ 40,48,48,48,33,33,28,24,16,13,18,22,24,25,26,26,26,26,32,28,25,25,24,28,28,30,30,30,27 };
+	scope_x_stance_y = new int[30]{ 40,37,33,30,28,20,21,16,10,7,8,16,19,25,25,27,25,23,21,13,7,3,11,17,19,23,24,19,17,12 };
 	for (int i = 0; i < 5; ++i) {
 		for (int j = 0; j < 2; ++j) {
 			guns[0].recoilOffsetY[i][j] = scope_x_stance_y;
