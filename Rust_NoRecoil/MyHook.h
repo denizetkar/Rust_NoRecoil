@@ -4,7 +4,8 @@
 #include <Windows.h>
 
 class MyHook {
-	MyHook() {}
+	MyHook() : msg {}, mouse_hook { nullptr }, hook_mouse_callback{ nullptr }, keyboard_hook{ nullptr },
+		hook_keyboard_callback{ nullptr }, destroy_callback{ nullptr } {}
 
 public:
 	using HOOK_MOUSE_CALLBACK = void (*)(WPARAM, PMSLLHOOKSTRUCT);

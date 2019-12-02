@@ -14,7 +14,7 @@
 #define NUMBER_OF_GUN_SCOPE 5
 #define NUMBER_OF_STANCE 2
 
-#define OFFSET_ERROR_BOUND 5
+#define OFFSET_ERROR_BOUND 0
 
 class NoRecoil {
 

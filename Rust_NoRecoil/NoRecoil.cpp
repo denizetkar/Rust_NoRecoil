@@ -21,14 +21,14 @@ void NoRecoil::initGuns() {
 	guns[0].millisecondsRecoilCooldown = 500;
 	guns[0].fullyAutomatic = true;
 	scope_x_stance_y = new int[30]{ -28,5,-44,-35,0,13,24,30,34,34,30,24,13,2,-12,-23,-29,-35,-36,-37,-33,-28,-19,-9,9,29,38,40,31,12 };
-	for (int i = 0; i < 5; ++i) {
-		for (int j = 0; j < 2; ++j) {
+	for (int i = 0; i < NUMBER_OF_GUN_SCOPE; ++i) {
+		for (int j = 0; j < NUMBER_OF_STANCE; ++j) {
 			guns[0].recoilOffsetX[i][j] = scope_x_stance_y;
 		}
 	}
 	scope_x_stance_y = new int[30]{ 40,37,33,30,28,20,21,16,10,7,8,16,19,25,25,27,25,23,21,13,7,3,11,17,19,23,24,19,17,12 };
-	for (int i = 0; i < 5; ++i) {
-		for (int j = 0; j < 2; ++j) {
+	for (int i = 0; i < NUMBER_OF_GUN_SCOPE; ++i) {
+		for (int j = 0; j < NUMBER_OF_STANCE; ++j) {
 			guns[0].recoilOffsetY[i][j] = scope_x_stance_y;
 		}
 	}
@@ -38,14 +38,14 @@ void NoRecoil::initGuns() {
 	guns[1].millisecondsRecoilCooldown = 500;
 	guns[1].fullyAutomatic = false;
 	scope_x_stance_y = new int[30]{ 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
-	for (int i = 0; i < 5; ++i) {
-		for (int j = 0; j < 2; ++j) {
+	for (int i = 0; i < NUMBER_OF_GUN_SCOPE; ++i) {
+		for (int j = 0; j < NUMBER_OF_STANCE; ++j) {
 			guns[1].recoilOffsetX[i][j] = scope_x_stance_y;
 		}
 	}
 	scope_x_stance_y = new int[30]{ 52,52,40,40,40,40,40,40,40,40,40,40,40,40,40,40 };
-	for (int i = 0; i < 5; ++i) {
-		for (int j = 0; j < 2; ++j) {
+	for (int i = 0; i < NUMBER_OF_GUN_SCOPE; ++i) {
+		for (int j = 0; j < NUMBER_OF_STANCE; ++j) {
 			guns[1].recoilOffsetY[i][j] = scope_x_stance_y;
 		}
 	}
@@ -265,7 +265,7 @@ void NoRecoil::processKeyboardInput(WPARAM wParam, PKBDLLHOOKSTRUCT kbdStruct) {
 std::random_device NoRecoil::rd;  //Will be used to obtain a seed for the random number engine
 std::mt19937 NoRecoil::gen(rd()); //Standard mersenne_twister_engine seeded with rd()
 std::uniform_int_distribution<int> NoRecoil::offsetError(-OFFSET_ERROR_BOUND, OFFSET_ERROR_BOUND);
-int NoRecoil::prevErrorX, NoRecoil::prevErrorY;
+int NoRecoil::prevErrorX = 0, NoRecoil::prevErrorY = 0;
 
 NoRecoil::Gun NoRecoil::guns[NUMBER_OF_GUN];
 NoRecoil::GunIndex NoRecoil::currentGun = NoRecoil::GunIndex::AK_47;
